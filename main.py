@@ -65,6 +65,19 @@ MAX_CHARS = 140
 LINE = "I have said no 2.4 million times this week. Effective immediately, I will be saying nothing."
 
 
+def has_clean_edges(text):
+    """Reject leading/trailing whitespace or control characters.
+
+    The sealed gate counts raw characters, so stray whitespace would
+    silently eat the 1-140 budget and a control character would break
+    the one-line shape. The LINE itself has clean edges, so this guard
+    only fires on a future edit that slips one in.
+    """
+    if text != text.strip():
+        return False
+    return all(ord(ch) >= 0x20 for ch in text)
+
+
 def check_gate(text):
     """Mirror the sealed gate: 1-140 chars, UTF-8, not only whitespace."""
     if not isinstance(text, str):
@@ -74,6 +87,8 @@ def check_gate(text):
     if not text.strip():
         return False
     if "\n" in text or "\r" in text:
+        return False
+    if not has_clean_edges(text):
         return False
     text.encode("utf-8")
     return True
